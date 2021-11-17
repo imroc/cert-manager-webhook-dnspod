@@ -1,0 +1,117 @@
+---
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "dnspod-webhook.selfSignedIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "dnspod-webhook.name" . }}
+    chart: {{ include "dnspod-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selfSigned: {}
+
+---
+
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "dnspod-webhook.rootCACertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "dnspod-webhook.name" . }}
+    chart: {{ include "dnspod-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "dnspod-webhook.rootCACertificate" . }}
+  duration: 43800h # 5y
+  issuerRef:
+    name: {{ include "dnspod-webhook.selfSignedIssuer" . }}
+  commonName: "ca.dnspod-webhook.cert-manager"
+  isCA: true
+
+---
+
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "dnspod-webhook.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "dnspod-webhook.name" . }}
+    chart: {{ include "dnspod-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ca:
+    secretName: {{ include "dnspod-webhook.rootCACertificate" . }}
+
+---
+
+# Finally, generate a serving certificate for the webhook to use
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "dnspod-webhook.servingCertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "dnspod-webhook.name" . }}
+    chart: {{ include "dnspod-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "dnspod-webhook.servingCertificate" . }}
+  duration: 8760h # 1y
+  issuerRef:
+    name: {{ include "dnspod-webhook.rootCAIssuer" . }}
+  dnsNames:
+  - {{ include "dnspod-webhook.fullname" . }}
+  - {{ include "dnspod-webhook.fullname" . }}.{{ .Release.Namespace }}
+  - {{ include "dnspod-webhook.fullname" . }}.{{ .Release.Namespace }}.svc
+
+{{- if .Values.clusterIssuer.enabled }}
+---
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ include "dnspod-webhook.clusterIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "dnspod-webhook.name" . }}
+    chart: {{ include "dnspod-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  acme:
+    {{- if .Values.clusterIssuer.staging }}
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    {{- else }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    {{- end }}
+    email: {{ .Values.clusterIssuer.email }}
+    privateKeySecretRef:
+      name: {{ include "dnspod-webhook.fullname" . }}-letsencrypt
+    solvers:
+    - dns01:
+        webhook:
+          groupName: {{ .Values.groupName }}
+          solverName: dnspod
+          config:
+            ttl: {{ .Values.clusterIssuer.ttl }}
+            secretId: {{ required ".Values.clusterIssuer.secretId is required" .Values.clusterIssuer.secretId }}
+            secretKeyRef:
+              key: secret-key
+              name: {{ include "dnspod-webhook.fullname" . }}-secret
+      {{- if .Values.clusterIssuer.selector }}
+      selector:
+      {{ toYaml .Values.clusterIssuer.selector | indent 8 }}
+      {{- end }}
+{{- end }}
+
