@@ -156,6 +156,20 @@ func getDomainID(client *dnspod.Client, zone string) (*uint64, error) {
 	return hostedDomain.DomainId, nil
 }
 
+func getDomainName(client *dnspod.Client, domainID *uint64) (*string, error) {
+	invalidDomain := "example.com" //ignore this domain,stupid tencent cloud sdk
+
+	domainInfoReq := dnspod.NewDescribeDomainRequest()
+	domainInfoReq.DomainId = domainID
+	domainInfoReq.Domain = &invalidDomain
+	domainInfo, err := client.DescribeDomain(domainInfoReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return domainInfo.Response.DomainInfo.Domain, nil
+}
+
 func findTxtRecords(client *dnspod.Client, domainID *uint64, zone, fqdn string) ([]*dnspod.RecordListItem, error) {
 	recordName := extractRecordName(fqdn, zone)
 	req := dnspod.NewDescribeRecordListRequest()
@@ -258,12 +272,18 @@ func (c *customDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
+	domainName, err := getDomainName(dnspodClient, domainID)
+	if err != nil {
+		klog.Errorf("Failed to find domain with id %s: %v", domainID, err)
+		return err
+	}
+
 	for _, record := range records {
 		if *record.Value != ch.Key {
 			continue
 		}
 		req := dnspod.NewDeleteRecordRequest()
-		req.DomainId = domainID
+		req.Domain = domainName
 		req.RecordId = record.RecordId
 		_, err = dnspodClient.DeleteRecord(req)
 		if err != nil {
