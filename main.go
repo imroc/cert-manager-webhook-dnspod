@@ -114,7 +114,6 @@ func (c *customDNSProviderSolver) getClient(ch *v1alpha1.ChallengeRequest, cfg c
 		if !ok {
 			return nil, fmt.Errorf("no secret key for %q in secret '%s/%s'", ref.Name, ref.Key, ch.ResourceNamespace)
 		}
-		klog.Infof("secretKey: %s", secretKey)
 
 		credential := common.NewCredential(cfg.SecretId, string(secretKey))
 		dnspodClient, err = dnspod.NewClient(credential, "", profile.NewClientProfile())
