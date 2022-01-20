@@ -121,7 +121,7 @@ func (c *customDNSProviderSolver) getClient(ch *v1alpha1.ChallengeRequest, cfg c
 		if err != nil {
 			return nil, fmt.Errorf("failed to create dnspod client: %s", err.Error())
 		}
-		klog.Infof("create dnspod client, secretId: %s, secretKey: %s", cfg.SecretId, secretKey)
+		klog.Infof("create dnspod client successfully")
 		c.dnspod[cfg.SecretId] = dnspodClient
 	}
 	return dnspodClient, nil
