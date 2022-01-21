@@ -114,28 +114,27 @@ func (c *customDNSProviderSolver) getClient(ch *v1alpha1.ChallengeRequest, cfg c
 		if !ok {
 			return nil, fmt.Errorf("no secret key for %q in secret '%s/%s'", ref.Name, ref.Key, ch.ResourceNamespace)
 		}
-		klog.Infof("secretKey: %s", secretKey)
 
 		credential := common.NewCredential(cfg.SecretId, string(secretKey))
 		dnspodClient, err = dnspod.NewClient(credential, "", profile.NewClientProfile())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create dnspod client: %s", err.Error())
 		}
-		klog.Infof("create dnspod client, secretId: %s, secretKey: %s", cfg.SecretId, secretKey)
+		klog.Infof("create dnspod client successfully")
 		c.dnspod[cfg.SecretId] = dnspodClient
 	}
 	return dnspodClient, nil
 }
 
-func getDomainID(client *dnspod.Client, zone string) (*uint64, error) {
+func getDomainAndID(client *dnspod.Client, zone string) (*string, *uint64, error) {
 	resp, err := client.DescribeDomainList(nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	authZone, err := util.FindZoneByFqdn(zone, util.RecursiveNameservers)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var hostedDomain *dnspod.DomainListItem
@@ -146,15 +145,15 @@ func getDomainID(client *dnspod.Client, zone string) (*uint64, error) {
 		}
 	}
 	if hostedDomain == nil {
-		return nil, fmt.Errorf("no domain found in zone %s", zone)
+		return nil, nil, fmt.Errorf("no domain found in zone %s", zone)
 	}
 	hostedDomainID := *hostedDomain.DomainId
 
 	if hostedDomainID == 0 {
-		return nil, fmt.Errorf("Zone %s not found in dnspod for zone %s", authZone, zone)
+		return nil, nil, fmt.Errorf("Zone %s not found in dnspod for zone %s", authZone, zone)
 	}
 
-	return hostedDomain.DomainId, nil
+	return hostedDomain.Name, hostedDomain.DomainId, nil
 }
 
 func findTxtRecords(client *dnspod.Client, domainID *uint64, zone, fqdn string) ([]*dnspod.RecordListItem, error) {
@@ -200,13 +199,14 @@ func (c *customDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	domainID, err := getDomainID(dnspodClient, ch.ResolvedZone)
+	domain, domainID, err := getDomainAndID(dnspodClient, ch.ResolvedZone)
 	if err != nil {
 		klog.Errorf("Failed to get domain id %s: %v", ch.ResolvedZone, err)
 		return err
 	}
 
 	req := dnspod.NewCreateRecordRequest()
+	req.Domain = domain
 	req.DomainId = domainID
 	req.Domain = &ch.ResolvedZone
 	recordType := "TXT"
@@ -247,7 +247,7 @@ func (c *customDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	domainID, err := getDomainID(dnspodClient, ch.ResolvedZone)
+	domain, domainID, err := getDomainAndID(dnspodClient, ch.ResolvedZone)
 	if err != nil {
 		klog.Errorf("Failed to get domain id %s: %v", ch.ResolvedZone, err)
 		return err
@@ -264,6 +264,7 @@ func (c *customDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 			continue
 		}
 		req := dnspod.NewDeleteRecordRequest()
+		req.Domain = domain
 		req.DomainId = domainID
 		req.RecordId = record.RecordId
 		_, err = dnspodClient.DeleteRecord(req)

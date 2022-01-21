@@ -1,4 +1,5 @@
-IMAGE_NAME := "cr.imroc.cc/library/cert-manager-webhook-dnspod"
+#IMAGE_NAME := "cr.imroc.cc/library/cert-manager-webhook-dnspod"
+IMAGE_NAME := "imroc/cert-manager-webhook-dnspod"
 IMAGE_TAG := "latest"
 
 build:

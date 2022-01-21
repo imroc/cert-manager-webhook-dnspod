@@ -18,6 +18,8 @@ $ helm upgrade --install cert-manager-webhook-dnspod roc/cert-manager-webhook-dn
     --set clusterIssuer.secretKey=<SECRET_KEY> 
 ```
 
+Notice: **`secretId`, `secretKey` is not DNSPod secret, it's tencent cloud secret!**
+
 ## Create Certificate
 
 ```yaml
