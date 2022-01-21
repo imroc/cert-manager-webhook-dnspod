@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: cr.imroc.cc/library/cert-manager-webhook-dnspod
+  repository: imroc/cert-manager-webhook-dnspod
   tag: latest
   pullPolicy: Always
 
