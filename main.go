@@ -57,7 +57,7 @@ type customDNSProviderSolver struct {
 	// 3. uncomment the relevant code in the Initialize method below
 	// 4. ensure your webhook's service account has the required RBAC role
 	//    assigned to it for interacting with the Kubernetes APIs you need.
-	//client kubernetes.Clientset
+	// client kubernetes.Clientset
 }
 
 // customDNSProviderConfig is a structure that is used to decode into when
@@ -80,7 +80,7 @@ type customDNSProviderConfig struct {
 	// These fields will be set by users in the
 	// `issuer.spec.acme.dns01.providers.webhook.config` field.
 
-	//Email           string `json:"email"`
+	// Email           string `json:"email"`
 	TTL          *uint64                  `json:"ttl"`
 	SecretId     string                   `json:"secretId"`
 	SecretKeyRef cmmeta.SecretKeySelector `json:"secretKeyRef"`
@@ -218,7 +218,7 @@ func (c *customDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	req.RecordLine = &line
 	req.SubDomain = &name
 
-	klog.Infof("create record: %+#v", req)
+	klog.Infof("create record: %+#v", *req)
 	_, err = dnspodClient.CreateRecord(req)
 	if err != nil {
 		klog.Errorf("Failed to create record: %v", err)
