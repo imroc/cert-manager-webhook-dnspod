@@ -54,3 +54,8 @@ Create chart name and version as used by the chart label.
 {{ printf "%s-cluster-issuer" (include "dnspod-webhook.fullname" .) }}
 {{- end -}}
 {{- end -}}
+
+
+{{- define "dnspod-webhook.namespace" -}}
+    {{ .Values.namespace | default .Release.Namespace }}
+{{- end -}}

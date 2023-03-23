@@ -5,7 +5,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "dnspod-webhook.selfSignedIssuer" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "dnspod-webhook.namespace" . }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}
@@ -21,7 +21,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "dnspod-webhook.rootCACertificate" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "dnspod-webhook.namespace" . }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}
@@ -42,7 +42,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "dnspod-webhook.rootCAIssuer" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "dnspod-webhook.namespace" . }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}
@@ -59,7 +59,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "dnspod-webhook.servingCertificate" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "dnspod-webhook.namespace" . }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}
@@ -72,8 +72,8 @@ spec:
     name: {{ include "dnspod-webhook.rootCAIssuer" . }}
   dnsNames:
   - {{ include "dnspod-webhook.fullname" . }}
-  - {{ include "dnspod-webhook.fullname" . }}.{{ .Release.Namespace }}
-  - {{ include "dnspod-webhook.fullname" . }}.{{ .Release.Namespace }}.svc
+  - {{ include "dnspod-webhook.fullname" . }}.{{ include "dnspod-webhook.namespace" . }}
+  - {{ include "dnspod-webhook.fullname" . }}.{{ include "dnspod-webhook.namespace" . }}.svc
 
 {{- if .Values.clusterIssuer.enabled }}
 ---
@@ -82,7 +82,6 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: {{ include "dnspod-webhook.clusterIssuer" . }}
-  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}

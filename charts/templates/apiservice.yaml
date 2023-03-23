@@ -8,12 +8,12 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
-    cert-manager.io/inject-ca-from: "{{ .Release.Namespace }}/{{ include "dnspod-webhook.servingCertificate" . }}"
+    cert-manager.io/inject-ca-from: "{{ include "dnspod-webhook.namespace" . }}/{{ include "dnspod-webhook.servingCertificate" . }}"
 spec:
   group: {{ .Values.groupName }}
   groupPriorityMinimum: 1000
   versionPriority: 15
   service:
     name: {{ include "dnspod-webhook.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ include "dnspod-webhook.namespace" . }}
   version: v1alpha1

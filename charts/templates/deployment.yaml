@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "dnspod-webhook.fullname" . }}
+  namespace: {{ include "dnspod-webhook.namespace" . }}
   labels:
     app: {{ include "dnspod-webhook.name" . }}
     chart: {{ include "dnspod-webhook.chart" . }}
