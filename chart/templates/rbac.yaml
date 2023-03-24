@@ -104,8 +104,6 @@ rules:
   - ""
   resources:
   - secrets
-  resourceNames:
-  - {{ include "dnspod-webhook.fullname" . }}-secret
   verbs:
   - get
   - watch

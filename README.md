@@ -11,8 +11,8 @@ This is a cert-manager webhook solver for [DNSPod](https://www.dnspod.cn).
 Generate SecretId and SecretKey in [Cloud API](https://console.cloud.tencent.com/cam/capi)
 
 ```console
-$ helm repo add roc https://charts.imroc.cc
-$ helm upgrade --install cert-manager-webhook-dnspod roc/cert-manager-webhook-dnspod \
+$ helm pull oci://registry-1.docker.io/imroc/cert-manager-webhook-dnspod
+$ helm upgrade --install cert-manager-webhook-dnspod cert-manager-webhook-dnspod-1.3.0.tgz \
     --namespace <NAMESPACE> \
     --set clusterIssuer.secretId=<SECRET_ID> \
     --set clusterIssuer.secretKey=<SECRET_KEY> 

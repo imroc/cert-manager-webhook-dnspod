@@ -2,7 +2,7 @@ apiVersion: v2
 appVersion: 1.2.0
 description: cert-manager webhook solver for DNSPod
 name: cert-manager-webhook-dnspod
-version: 1.3.0
+version: 1.4.2
 type: application
 maintainers:
 - name: imroc
