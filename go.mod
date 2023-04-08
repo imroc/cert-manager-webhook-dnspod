@@ -1,4 +1,4 @@
-module github.com/cert-manager/webhook-example
+module github.com/imroc/cert-manager-webhook-dnspod
 
 go 1.13
 

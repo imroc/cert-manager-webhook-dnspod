@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	terrors "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -166,10 +167,15 @@ func findTxtRecords(client *dnspod.Client, domainID *uint64, zone, fqdn string) 
 	req.RecordType = &recordType
 	resp, err := client.DescribeRecordList(req)
 	if err != nil {
+		if e, ok := err.(*terrors.TencentCloudSDKError); ok {
+			if e.Code == "ResourceNotFound.NoDataOfRecord" {
+				klog.Infof("Ignore TXT record not found %s.%s", recordName, zone)
+				return nil, nil
+			}
+		}
 		klog.Errorf("Failed to list records (%d, %s): %v", *domainID, recordName, err)
 		return nil, fmt.Errorf("dnspod API call has failed: %v", err)
 	}
-
 	return resp.Response.RecordList, nil
 }
 
