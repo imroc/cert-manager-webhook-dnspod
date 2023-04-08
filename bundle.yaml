@@ -1,0 +1,252 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-webhook-dnspod
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-webhook-dnspod:domain-solver
+  labels:
+    app: cert-manager-webhook-dnspod
+rules:
+  - apiGroups:
+      - acme.imroc.cc
+    resources:
+      - '*'
+    verbs:
+      - 'create'
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-webhook-dnspod:secret-reader
+  labels:
+    app: cert-manager-webhook-dnspod
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-webhook-dnspod:auth-delegator
+  labels:
+    app: cert-manager-webhook-dnspod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-webhook-dnspod:domain-solver
+  labels:
+    app: cert-manager-webhook-dnspod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-webhook-dnspod:domain-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-webhook-dnspod:secret-reader
+  labels:
+    app: cert-manager-webhook-dnspod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-webhook-dnspod:secret-reader
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: cert-manager-webhook-dnspod
+  namespace: cert-manager
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-webhook-dnspod:webhook-authentication-reader
+  namespace: kube-system
+  labels:
+    app: cert-manager-webhook-dnspod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-webhook-dnspod
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    app: cert-manager-webhook-dnspod
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager-webhook-dnspod
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cert-manager-webhook-dnspod
+  template:
+    metadata:
+      labels:
+        app: cert-manager-webhook-dnspod
+    spec:
+      serviceAccountName: cert-manager-webhook-dnspod
+      containers:
+        - name: cert-manager-webhook-dnspod
+          image: "imroc/cert-manager-webhook-dnspod:latest"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --tls-cert-file=/tls/tls.crt
+            - --tls-private-key-file=/tls/tls.key
+          env:
+            - name: GROUP_NAME
+              value: "acme.imroc.cc"
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          readinessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          volumeMounts:
+            - name: certs
+              mountPath: /tls
+              readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: cert-manager-webhook-dnspod-tls
+
+---
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.acme.imroc.cc
+  labels:
+    app: cert-manager-webhook-dnspod
+  annotations:
+    cert-manager.io/inject-ca-from: "cert-manager/cert-manager-webhook-dnspod-tls"
+spec:
+  group: acme.imroc.cc
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
+  version: v1alpha1
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-manager-webhook-dnspod-ca
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  secretName: cert-manager-webhook-dnspod-ca
+  duration: 43800h # 5y
+  issuerRef:
+    name: cert-manager-webhook-dnspod-selfsign
+  commonName: "ca.dnspod-webhook.cert-manager"
+  isCA: true
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-manager-webhook-dnspod-tls
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  secretName: cert-manager-webhook-dnspod-tls
+  duration: 8760h # 1y
+  issuerRef:
+    name: cert-manager-webhook-dnspod-ca
+  dnsNames:
+  - cert-manager-webhook-dnspod
+  - cert-manager-webhook-dnspod.cert-manager
+  - cert-manager-webhook-dnspod.cert-manager.svc
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: cert-manager-webhook-dnspod-selfsign
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: cert-manager-webhook-dnspod-ca
+  namespace: cert-manager
+  labels:
+    app: cert-manager-webhook-dnspod
+spec:
+  ca:
+    secretName: cert-manager-webhook-dnspod-ca
