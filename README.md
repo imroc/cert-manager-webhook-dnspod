@@ -4,7 +4,7 @@ This is a cert-manager webhook solver for [DNSPod](https://www.dnspod.cn).
 
 ## Prerequisites
 
-* [cert-manager](https://github.com/jetstack/cert-manager) >= 1.6.0
+* [cert-manager](https://github.com/cert-manager/cert-manager) >= 1.13.0
 
 ## Installation
 

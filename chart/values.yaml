@@ -14,7 +14,7 @@ certManager:
 
 image:
   repository: imroc/cert-manager-webhook-dnspod
-  tag: latest
+  tag: v1.3.0
   pullPolicy: Always
 
 clusterIssuer:
@@ -22,8 +22,8 @@ clusterIssuer:
   name: dnspod
   ttl: 600
   staging: false
-  secretId: ''
-  secretKey: ''
+  secretId: ""
+  secretKey: ""
   #email:
 
   # https://cert-manager.io/docs/configuration/acme/#adding-multiple-solver-types
@@ -38,7 +38,8 @@ service:
   type: ClusterIP
   port: 443
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -64,3 +65,4 @@ cert-manager:
   prometheus:
     enabled: false
   namespace: cert-manager
+

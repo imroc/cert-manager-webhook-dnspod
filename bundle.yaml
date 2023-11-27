@@ -17,9 +17,9 @@ rules:
   - apiGroups:
       - acme.imroc.cc
     resources:
-      - '*'
+      - "*"
     verbs:
-      - 'create'
+      - "create"
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -29,13 +29,13 @@ metadata:
   labels:
     app: cert-manager-webhook-dnspod
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - watch
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -83,10 +83,10 @@ roleRef:
   kind: ClusterRole
   name: cert-manager-webhook-dnspod:secret-reader
 subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: cert-manager-webhook-dnspod
-  namespace: cert-manager
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -145,7 +145,7 @@ spec:
       serviceAccountName: cert-manager-webhook-dnspod
       containers:
         - name: cert-manager-webhook-dnspod
-          image: "imroc/cert-manager-webhook-dnspod:latest"
+          image: "imroc/cert-manager-webhook-dnspod:v1.3.0"
           imagePullPolicy: IfNotPresent
           args:
             - --tls-cert-file=/tls/tls.crt
@@ -204,7 +204,7 @@ metadata:
     app: cert-manager-webhook-dnspod
 spec:
   secretName: cert-manager-webhook-dnspod-ca
-  duration: 43800h # 5y
+  duration: 43800h0m0s # 5y
   issuerRef:
     name: cert-manager-webhook-dnspod-selfsign
   commonName: "ca.dnspod-webhook.cert-manager"
@@ -220,13 +220,13 @@ metadata:
     app: cert-manager-webhook-dnspod
 spec:
   secretName: cert-manager-webhook-dnspod-tls
-  duration: 8760h # 1y
+  duration: 8760h0m0s # 1y
   issuerRef:
     name: cert-manager-webhook-dnspod-ca
   dnsNames:
-  - cert-manager-webhook-dnspod
-  - cert-manager-webhook-dnspod.cert-manager
-  - cert-manager-webhook-dnspod.cert-manager.svc
+    - cert-manager-webhook-dnspod
+    - cert-manager-webhook-dnspod.cert-manager
+    - cert-manager-webhook-dnspod.cert-manager.svc
 
 ---
 apiVersion: cert-manager.io/v1
