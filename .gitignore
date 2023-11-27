@@ -21,3 +21,6 @@ _out
 _test
 
 bin/
+
+# helm package
+*.tgz
