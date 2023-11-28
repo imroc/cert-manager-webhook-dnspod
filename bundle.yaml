@@ -145,7 +145,7 @@ spec:
       serviceAccountName: cert-manager-webhook-dnspod
       containers:
         - name: cert-manager-webhook-dnspod
-          image: "imroc/cert-manager-webhook-dnspod:v1.3.0"
+          image: "imroc/cert-manager-webhook-dnspod:1.3.0"
           imagePullPolicy: IfNotPresent
           args:
             - --tls-cert-file=/tls/tls.crt

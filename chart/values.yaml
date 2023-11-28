@@ -14,7 +14,7 @@ certManager:
 
 image:
   repository: imroc/cert-manager-webhook-dnspod
-  tag: v1.3.0
+  tag: 1.3.0
   pullPolicy: Always
 
 clusterIssuer:
@@ -65,4 +65,3 @@ cert-manager:
   prometheus:
     enabled: false
   namespace: cert-manager
-
