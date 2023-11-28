@@ -15,6 +15,8 @@
 
 # Ignore the built binary
 cert-manager-webhook-example
+webhook
+apiserver.local.config/
 
 # Make artifacts
 _out
