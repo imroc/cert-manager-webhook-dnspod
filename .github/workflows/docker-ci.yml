@@ -12,7 +12,7 @@ on:
     paths-ignore:
     - '**.md'
     - bundle.yaml
-    - chart/**
+    - charts/**
 
 env:
   REGISTRY_IMAGE: imroc/cert-manager-webhook-dnspod
