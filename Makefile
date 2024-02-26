@@ -7,6 +7,6 @@ build:
 
 push_chart:
 	rm *.tgz
-	helm package chart
+	helm package charts/cert-manager-webhook-dnspod
 	helm push *.tgz oci://registry-1.docker.io/imroc
 	rm *.tgz

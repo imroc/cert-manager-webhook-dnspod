@@ -17,7 +17,7 @@ You can install chart from git repo:
 ```bash
 $ git clone https://github.com/imroc/cert-manager-webhook-dnspod.git
 $ cd cert-manager-webhook-dnspod
-$ helm upgrade --install cert-manager-webhook-dnspod ./chart \
+$ helm upgrade --install cert-manager-webhook-dnspod ./charts/cert-manager-webhook-dnspod \
     --namespace cert-manager \
     --set clusterIssuer.secretId=<SECRET_ID> \
     --set clusterIssuer.secretKey=<SECRET_KEY> 
