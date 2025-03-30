@@ -129,15 +129,22 @@ func (c *customDNSProviderSolver) getClient(ch *v1alpha1.ChallengeRequest, cfg c
 }
 
 func getDomainAndID(client *dnspod.Client, zone string) (*string, *uint64, error) {
+	klog.Infof("[DEBUG] getDomainAndID: %s", zone)
 	resp, err := client.DescribeDomainList(nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	data, err := json.Marshal(resp)
+	if err != nil {
+		return nil, nil, err
+	}
+	klog.Infof("[DEBUG] DescribeDomainList: %+v", string(data))
 	authZone, err := util.FindZoneByFqdn(zone, util.RecursiveNameservers)
 	if err != nil {
 		return nil, nil, err
 	}
+	klog.Infof("[DEBUG] FindZoneByFqdn, authZone: %s", authZone)
 
 	var hostedDomain *dnspod.DomainListItem
 	for _, domain := range resp.Response.DomainList {
@@ -194,6 +201,11 @@ func extractRecordName(fqdn, zone string) string {
 // cert-manager itself will later perform a self check to ensure that the
 // solver has correctly configured the DNS provider.
 func (c *customDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
+	cha, err := json.Marshal(ch)
+	if err != nil {
+		return err
+	}
+	klog.Infof("[DEBUG] received ChallengeRequest: %v", string(cha))
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
 		klog.Errorf("Failed to log config %v: %v", ch.Config, err)
@@ -262,7 +274,7 @@ func (c *customDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 
 	records, err := findTxtRecords(dnspodClient, domainID, ch.ResolvedZone, ch.ResolvedFQDN)
 	if err != nil {
-		klog.Errorf("Failed to find txt records (%s, %s, %s): %v", domainID, ch.ResolvedZone, ch.ResolvedFQDN, err)
+		klog.Errorf("Failed to find txt records (%d, %s, %s): %v", domainID, ch.ResolvedZone, ch.ResolvedFQDN, err)
 		return err
 	}
 
