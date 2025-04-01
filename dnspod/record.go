@@ -53,14 +53,15 @@ func (s *Solver) createTxtRecord(client *dnspod.Client, zone, fqdn, key, recordL
 	if recordLine == "" {
 		recordLine = "默认"
 	}
-	req := dnspod.NewCreateTXTRecordRequest()
+	req := dnspod.NewCreateRecordRequest()
 	req.Domain = common.StringPtr(zone)
 	req.TTL = ttl
 	req.Value = &key
+	req.RecordType = &txtRecordType
 	req.RecordLine = &recordLine
 	req.SubDomain = common.StringPtr(extractRecordName(fqdn, zone))
 
-	resp, err := client.CreateTXTRecord(req)
+	resp, err := client.CreateRecord(req)
 	s.log.Debug("dnspod api request", "api", "CreateTXTRecord", "request", req, "response", resp)
 	if err != nil {
 		s.Error(err, "dnspod api request failed", "api", "CreateTXTRecord", "request", req, "response", resp)
