@@ -16,7 +16,7 @@ docker-buildx-push: docker-buildx docker-push
 # architectures.
 PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
 .PHONY: docker-buildx
-docker-buildx: ## Build and push docker image for the manager for cross-platform support
+docker-buildx:
 	$(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} .
 .PHONY: docker-push
 docker-push:
