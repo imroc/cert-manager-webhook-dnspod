@@ -36,11 +36,6 @@ func main() {
 		panic("GROUP_NAME must be specified")
 	}
 
-	// This will register our custom DNS provider with the webhook serving
-	// library, making it available as an API under the provided GroupName.
-	// You can register multiple DNS provider implementations with a single
-	// webhook, where the Name() method will be used to disambiguate between
-	// the different implementations.
 	cmd.RunWebhookServer(GroupName,
 		&customDNSProviderSolver{},
 	)
@@ -53,36 +48,9 @@ func main() {
 type customDNSProviderSolver struct {
 	client *kubernetes.Clientset
 	dnspod map[string]*dnspod.Client
-	// If a Kubernetes 'clientset' is needed, you must:
-	// 1. uncomment the additional `client` field in this structure below
-	// 2. uncomment the "k8s.io/client-go/kubernetes" import at the top of the file
-	// 3. uncomment the relevant code in the Initialize method below
-	// 4. ensure your webhook's service account has the required RBAC role
-	//    assigned to it for interacting with the Kubernetes APIs you need.
-	// client kubernetes.Clientset
 }
 
-// customDNSProviderConfig is a structure that is used to decode into when
-// solving a DNS01 challenge.
-// This information is provided by cert-manager, and may be a reference to
-// additional configuration that's needed to solve the challenge for this
-// particular certificate or issuer.
-// This typically includes references to Secret resources containing DNS
-// provider credentials, in cases where a 'multi-tenant' DNS solver is being
-// created.
-// If you do *not* require per-issuer or per-certificate configuration to be
-// provided to your webhook, you can skip decoding altogether in favour of
-// using CLI flags or similar to provide configuration.
-// You should not include sensitive information here. If credentials need to
-// be used by your provider here, you should reference a Kubernetes Secret
-// resource and fetch these credentials using a Kubernetes clientset.
 type customDNSProviderConfig struct {
-	// Change the two fields below according to the format of the configuration
-	// to be decoded.
-	// These fields will be set by users in the
-	// `issuer.spec.acme.dns01.providers.webhook.config` field.
-
-	// Email           string `json:"email"`
 	TTL          *uint64                  `json:"ttl"`
 	SecretId     string                   `json:"secretId"`
 	SecretKeyRef cmmeta.SecretKeySelector `json:"secretKeyRef"`
