@@ -2,6 +2,18 @@ apiVersion: v1
 entries:
   cert-manager-webhook-dnspod:
   - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2025-04-01T13:37:55.627341559Z"
+    description: cert-manager webhook solver for DNSPod
+    digest: 5bc5f784e8acdee7caa7cbf2a41d13858f640cf7035bd3341f13fa6f3c5c7721
+    maintainers:
+    - name: imroc
+    name: cert-manager-webhook-dnspod
+    type: application
+    urls:
+    - https://github.com/imroc/cert-manager-webhook-dnspod/releases/download/cert-manager-webhook-dnspod-1.5.0/cert-manager-webhook-dnspod-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     appVersion: 1.3.0
     created: "2025-04-01T13:33:55.027198089Z"
     description: cert-manager webhook solver for DNSPod
@@ -13,4 +25,4 @@ entries:
     urls:
     - https://github.com/imroc/cert-manager-webhook-dnspod/releases/download/cert-manager-webhook-dnspod-1.4.5/cert-manager-webhook-dnspod-1.4.5.tgz
     version: 1.4.5
-generated: "2025-04-01T13:33:55.027208759Z"
+generated: "2025-04-01T13:37:55.627359172Z"
