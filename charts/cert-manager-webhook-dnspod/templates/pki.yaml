@@ -94,7 +94,9 @@ spec:
     {{- else }}
     server: https://acme-v02.api.letsencrypt.org/directory
     {{- end }}
-    email: {{ .Values.clusterIssuer.email }}
+    {{- with .Values.clusterIssuer.email }}
+    email: {{ . }}
+    {{- end }}
     privateKeySecretRef:
       name: {{ include "dnspod-webhook.fullname" . }}-letsencrypt
     solvers:
@@ -104,7 +106,9 @@ spec:
           solverName: dnspod
           config:
             ttl: {{ .Values.clusterIssuer.ttl }}
-            secretId: {{ required ".Values.clusterIssuer.secretId is required" .Values.clusterIssuer.secretId }}
+            secretIdRef:
+              key: secret-id
+              name: {{ include "dnspod-webhook.fullname" . }}-secret
             secretKeyRef:
               key: secret-key
               name: {{ include "dnspod-webhook.fullname" . }}-secret
