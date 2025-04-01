@@ -8,6 +8,9 @@
 # here is recommended.
 groupName: acme.imroc.cc
 
+# log level of the webhook server: debug, info, warn, error
+logLevel: info
+
 certManager:
   namespace: cert-manager
   serviceAccountName: cert-manager
@@ -25,8 +28,7 @@ clusterIssuer:
   secretId: ""
   secretKey: ""
   recordLine: ""
-  #email:
-
+  email: ""
   # https://cert-manager.io/docs/configuration/acme/#adding-multiple-solver-types
   #selector:
   #  dnsZones:
