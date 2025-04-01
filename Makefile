@@ -1,5 +1,5 @@
-IMAGE_NAME ?= "imroc/cert-manager-webhook-dnspod"
-IMAGE_TAG ?= "latest"
+IMAGE_NAME ?= imroc/cert-manager-webhook-dnspod
+IMAGE_TAG ?= latest
 IMG ?= $(IMAGE_NAME):$(IMAGE_TAG)
 PROJECT_NAME := cert-manager-webhook-dnspod
 
