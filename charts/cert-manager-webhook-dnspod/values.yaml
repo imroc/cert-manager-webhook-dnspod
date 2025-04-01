@@ -18,7 +18,7 @@ image:
   pullPolicy: Always
 
 clusterIssuer:
-  enabled: true
+  enabled: false
   name: dnspod
   ttl: 600
   staging: false
