@@ -29,13 +29,6 @@ func NewSolver() *Solver {
 	}
 }
 
-func (c *Solver) SetLogLevel(level string) error {
-	if err := c.logLevel.UnmarshalText([]byte(level)); err != nil {
-		return errors.Wrap(err, "failed to parse log level, valid values are: debug, info, warn, error")
-	}
-	return nil
-}
-
 // Name is used as the name for this DNS solver when referencing it on the ACME
 // Issuer resource.
 func (c *Solver) Name() string {
@@ -89,11 +82,6 @@ func (c *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return errors.WithStack(err)
 	}
 	return nil
-}
-
-func (c *Solver) Error(err error, msg string, args ...any) {
-	args = append(args, "error", err)
-	c.log.Error(msg, args...)
 }
 
 // Initialize will be called when the webhook first starts.
