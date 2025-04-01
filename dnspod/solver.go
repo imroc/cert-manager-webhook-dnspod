@@ -24,7 +24,7 @@ func NewSolver() *Solver {
 	logLevel := &slog.LevelVar{}
 	logLevel.Set(slog.LevelInfo)
 	return &Solver{
-		log:      slog.New(slog.NewJSONHandler(os.Stdin, &slog.HandlerOptions{Level: logLevel})),
+		log:      slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})),
 		logLevel: logLevel,
 	}
 }
