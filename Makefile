@@ -12,12 +12,18 @@ CONTAINER_TOOL ?= docker
 .PHONY: docker-buildx-push
 docker-buildx-push: docker-buildx docker-push
 
+.PHONY: docker-build-push
+docker-build-push: docker-build docker-push
+
 # PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
 # architectures.
 PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
 .PHONY: docker-buildx
 docker-buildx:
-	$(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} .
+	$(CONTAINER_TOOL) buildx build --platform=$(PLATFORMS) --tag ${IMG} .
 .PHONY: docker-push
 docker-push:
 	$(CONTAINER_TOOL) push ${IMG}
+.PHONY: docker-build
+docker-build:
+	$(CONTAINER_TOOL) buildx build --platform=linux/amd64 --tag ${IMG} .
