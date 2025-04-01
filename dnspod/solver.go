@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
+	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
 )
 
 // Solver implements the logic needed to 'present'an ACME challenge TXT record
@@ -50,7 +51,7 @@ func (s *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
 
 	err = s.createTxtRecord(
 		dnspodClient,
-		ch.ResolvedZone,
+		util.UnFqdn(ch.ResolvedZone),
 		ch.ResolvedFQDN,
 		ch.Key,
 		cfg.RecordLine,
@@ -77,7 +78,7 @@ func (s *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return errors.WithStack(err)
 	}
 
-	if err := s.ensureTxtRecordsDeleted(dnspodClient, ch.ResolvedZone, ch.ResolvedFQDN, ch.Key); err != nil {
+	if err := s.ensureTxtRecordsDeleted(dnspodClient, util.UnFqdn(ch.ResolvedZone), ch.ResolvedFQDN, ch.Key); err != nil {
 		s.Error(err, "failed to ensure txt records deleted", "cr", ch)
 		return errors.WithStack(err)
 	}
