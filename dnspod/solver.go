@@ -31,7 +31,7 @@ func NewSolver() *Solver {
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
 // Issuer resource.
-func (c *Solver) Name() string {
+func (s *Solver) Name() string {
 	return "dnspod"
 }
 
@@ -40,15 +40,15 @@ func (c *Solver) Name() string {
 // This method should tolerate being called multiple times with the same value.
 // cert-manager itself will later perform a self check to ensure that the
 // solver has correctly configured the DNS provider.
-func (c *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
-	c.log.Debug("Present", "cr", ch)
-	cfg, dnspodClient, err := c.getConfigAndClient(ch)
+func (s *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
+	s.log.Debug("Present", "cr", ch)
+	cfg, dnspodClient, err := s.getConfigAndClient(ch)
 	if err != nil {
-		c.Error(err, "failed to get config dnspod client when present", "cr", ch)
+		s.Error(err, "failed to get config dnspod client when present", "cr", ch)
 		return errors.WithStack(err)
 	}
 
-	err = c.createTxtRecord(
+	err = s.createTxtRecord(
 		dnspodClient,
 		ch.ResolvedZone,
 		ch.ResolvedFQDN,
@@ -57,7 +57,7 @@ func (c *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
 		cfg.TTL,
 	)
 	if err != nil {
-		c.Error(err, "failed to create txt record", "cr", ch)
+		s.Error(err, "failed to create txt record", "cr", ch)
 		return errors.WithStack(err)
 	}
 	return nil
@@ -69,16 +69,16 @@ func (c *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
 // value provided on the ChallengeRequest should be cleaned up.
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
-func (c *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	c.log.Debug("CleanUp", "cr", ch)
-	_, dnspodClient, err := c.getConfigAndClient(ch)
+func (s *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
+	s.log.Debug("CleanUp", "cr", ch)
+	_, dnspodClient, err := s.getConfigAndClient(ch)
 	if err != nil {
-		c.Error(err, "failed to get dnspod client when cleanp up", "cr", ch)
+		s.Error(err, "failed to get dnspod client when cleanp up", "cr", ch)
 		return errors.WithStack(err)
 	}
 
-	if err := c.ensureTxtRecordsDeleted(dnspodClient, ch.ResolvedZone, ch.ResolvedFQDN, ch.Key); err != nil {
-		c.Error(err, "failed to ensure txt records deleted", "cr", ch)
+	if err := s.ensureTxtRecordsDeleted(dnspodClient, ch.ResolvedZone, ch.ResolvedFQDN, ch.Key); err != nil {
+		s.Error(err, "failed to ensure txt records deleted", "cr", ch)
 		return errors.WithStack(err)
 	}
 	return nil
@@ -93,12 +93,12 @@ func (c *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 // provider accounts.
 // The stopCh can be used to handle early termination of the webhook, in cases
 // where a SIGTERM or similar signal is sent to the webhook process.
-func (c *Solver) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
+func (s *Solver) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
 	cl, err := kubernetes.NewForConfig(kubeClientConfig)
 	if err != nil {
-		c.Error(err, "Failed to new kubernetes client")
+		s.Error(err, "Failed to new kubernetes client")
 		return err
 	}
-	c.client = cl
+	s.client = cl
 	return nil
 }

@@ -13,8 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *Solver) loadSecretData(namespace string, ref cmmeta.SecretKeySelector) (string, error) {
-	secret, err := c.client.CoreV1().Secrets(namespace).Get(context.TODO(), ref.Name, metav1.GetOptions{})
+func (s *Solver) loadSecretData(namespace string, ref cmmeta.SecretKeySelector) (string, error) {
+	secret, err := s.client.CoreV1().Secrets(namespace).Get(context.TODO(), ref.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to get secret '%s/%s'", namespace, ref.Name)
 	}
@@ -25,18 +25,18 @@ func (c *Solver) loadSecretData(namespace string, ref cmmeta.SecretKeySelector) 
 	return string(data), nil
 }
 
-func (c *Solver) getConfigAndClient(ch *v1alpha1.ChallengeRequest) (*Config, *dnspod.Client, error) {
+func (s *Solver) getConfigAndClient(ch *v1alpha1.ChallengeRequest) (*Config, *dnspod.Client, error) {
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to load config from challenge request")
 	}
 
-	secretId, err := c.loadSecretData(ch.ResourceNamespace, cfg.SecretIdRef)
+	secretId, err := s.loadSecretData(ch.ResourceNamespace, cfg.SecretIdRef)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to load secret id from secret")
 	}
 
-	secretKey, err := c.loadSecretData(ch.ResourceNamespace, cfg.SecretKeyRef)
+	secretKey, err := s.loadSecretData(ch.ResourceNamespace, cfg.SecretKeyRef)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to load secret key from secret")
 	}
