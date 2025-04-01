@@ -8,52 +8,20 @@ This is a cert-manager webhook solver for [DNSPod](https://www.dnspod.cn).
 
 ## Installation
 
-### Helm
+### Use Helm
 
 First, generate `SecretId` and `SecretKey` in [Cloud API](https://console.cloud.tencent.com/cam/capi)
 
 You can install chart from git repo:
 
 ```bash
-$ git clone https://github.com/imroc/cert-manager-webhook-dnspod.git
-$ cd cert-manager-webhook-dnspod
-$ helm upgrade --install cert-manager-webhook-dnspod ./charts/cert-manager-webhook-dnspod \
-    --namespace cert-manager \
-    --set clusterIssuer.secretId=<SECRET_ID> \
-    --set clusterIssuer.secretKey=<SECRET_KEY> 
+# Firstly add cert-manager-webhook-dnspod charts repository if you haven't do this
+helm repo add cert-manager-webhook-dnspod https://imroc.github.io/cert-manager-webhook-dnspod
+# Install the latest version.
+helm upgrade --install --namespace cert-manager \
+  cert-manager-webhook-dnspod cert-manager-webhook-dnspod/cert-manager-webhook-dnspod
 ```
-
-Or install chart from docker hub:
-
-```bash
-$ helm pull oci://registry-1.docker.io/imroc/cert-manager-webhook-dnspod --untar
-$ helm upgrade --install cert-manager-webhook-dnspod ./cert-manager-webhook-dnspod \
-    --namespace cert-manager \
-    --set clusterIssuer.secretId=<SECRET_ID> \
-    --set clusterIssuer.secretKey=<SECRET_KEY> 
-```
-
-Notice: **`secretId`, `secretKey` is not DNSPod secret, it's tencent cloud secret!**
-
-Then create certificate referring auto-created ClusterIssuer:
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: example-crt
-spec:
-  secretName: example-crt
-  issuerRef:
-    name: dnspod
-    kind: ClusterIssuer
-    group: cert-manager.io
-  dnsNames:
-    - "example.com"
-    - "*.example.com"
-```
-
-## Kubectl Apply
+## Use Kubectl
 
 Use `kubectl apply` to install:
 
@@ -61,22 +29,29 @@ Use `kubectl apply` to install:
 kubectl apply -f https://raw.githubusercontent.com/imroc/cert-manager-webhook-dnspod/master/bundle.yaml
 ```
 
-Create a secret that contains TencentCloud account's `SecretKey`:
+## Usage
+
+### Prepare Issuer
+
+Before you can issue a certificate, you need to create a `Issuer` or `ClusterIssuer`.
+
+Firstly, create a secret that contains TencentCloud account's `SecretId` and `SecretKey`:
 
 ```yaml
 apiVersion: v1
-stringData:
-  secret-key: ******
 kind: Secret
 metadata:
   name: dnspod-secret
   namespace: cert-manager
 type: Opaque
+stringData:
+  secretId: xxx
+  secretKey: xxx
 ```
 
-> base64 is not need in `stringData`.
+> Base64 is not needed in `stringData`.
 
-Create a `ClusterIssuer` referring the secret:
+Then you can create a `ClusterIssuer` referring the secret:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -94,18 +69,27 @@ spec:
       - dns01:
           webhook:
             config:
-              secretId: ************************************
+              secretIdRef:
+                key: secretId
+                name: dnspod-secret
               secretKeyRef:
-                key: secret-key
+                key: secretKey
                 name: dnspod-secret
               ttl: 600
+              recordLine: ""
             groupName: acme.imroc.cc
             solverName: dnspod
 ```
 
-> `secretId` is the SecretId of your TencentCloud account.
+1. `secretId` and `secretKey` is the SecretId and SecretKey of your TencentCloud account.
+2. `groupName` is the the groupName that specified in your installation, defaults to `acme.imroc.cc`.
+3. `solverName` must be `dnspod`.
+4. `ttl` is the optional ttl of dns TXT record that created by webhook.
+5. `recordLine` is the optional recordLine parameter of the dnspod.
 
-Create the `Certificate` you want:
+### Issue Certificate
+
+You can issue the certificate by creating `Certificate` that referring the dnspod `ClusterIssuer`:
 
 ```yaml
 apiVersion: cert-manager.io/v1

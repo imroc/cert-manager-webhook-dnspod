@@ -107,10 +107,10 @@ spec:
           config:
             ttl: {{ .Values.clusterIssuer.ttl }}
             secretIdRef:
-              key: secret-id
+              key: secretId
               name: {{ include "dnspod-webhook.fullname" . }}-secret
             secretKeyRef:
-              key: secret-key
+              key: secretKey
               name: {{ include "dnspod-webhook.fullname" . }}-secret
       {{- if .Values.clusterIssuer.selector }}
       selector: {{ toYaml .Values.clusterIssuer.selector | nindent 8 }}
