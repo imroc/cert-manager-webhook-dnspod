@@ -42,10 +42,10 @@ func (s *Solver) Name() string {
 // cert-manager itself will later perform a self check to ensure that the
 // solver has correctly configured the DNS provider.
 func (s *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
-	s.log.Debug("Present", "cr", ch)
+	s.log.Info("present ACME DNS01 challenge", "challenge", ch)
 	cfg, dnspodClient, err := s.getConfigAndClient(ch)
 	if err != nil {
-		s.Error(err, "failed to get config dnspod client when present", "cr", ch)
+		s.Error(err, "failed to get config dnspod client when present", "challenge", ch)
 		return errors.WithStack(err)
 	}
 
@@ -58,7 +58,7 @@ func (s *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
 		cfg.TTL,
 	)
 	if err != nil {
-		s.Error(err, "failed to create txt record", "cr", ch)
+		s.Error(err, "failed to create txt record", "challenge", ch)
 		return errors.WithStack(err)
 	}
 	return nil
@@ -71,15 +71,15 @@ func (s *Solver) Present(ch *v1alpha1.ChallengeRequest) error {
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
 func (s *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	s.log.Debug("CleanUp", "cr", ch)
+	s.log.Info("clean up relevant TXT record of ACME DNS01 challenge", "challenge", ch)
 	_, dnspodClient, err := s.getConfigAndClient(ch)
 	if err != nil {
-		s.Error(err, "failed to get dnspod client when cleanp up", "cr", ch)
+		s.Error(err, "failed to get dnspod client when cleanp up", "challenge", ch)
 		return errors.WithStack(err)
 	}
 
 	if err := s.ensureTxtRecordsDeleted(dnspodClient, util.UnFqdn(ch.ResolvedZone), ch.ResolvedFQDN, ch.Key); err != nil {
-		s.Error(err, "failed to ensure txt records deleted", "cr", ch)
+		s.Error(err, "failed to ensure txt records deleted", "challenge", ch)
 		return errors.WithStack(err)
 	}
 	return nil
@@ -95,11 +95,11 @@ func (s *Solver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 // The stopCh can be used to handle early termination of the webhook, in cases
 // where a SIGTERM or similar signal is sent to the webhook process.
 func (s *Solver) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
-	cl, err := kubernetes.NewForConfig(kubeClientConfig)
+	client, err := kubernetes.NewForConfig(kubeClientConfig)
 	if err != nil {
-		s.Error(err, "Failed to new kubernetes client")
-		return err
+		s.Error(err, "Failed to create kubernetes client")
+		return errors.WithStack(err)
 	}
-	s.client = cl
+	s.client = client
 	return nil
 }

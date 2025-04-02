@@ -17,13 +17,33 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 	req.Domain = &zone
 	req.RecordType = &txtRecordType
 	resp, err := client.DescribeRecordList(req)
-	s.log.Debug("dnspod api request", "api", "DescribeRecordList", "request", req, "response", resp)
+	s.log.Debug(
+		"dnspod api request",
+		"api", "DescribeRecordList",
+		"request", req,
+		"response", resp,
+	)
 	if err != nil {
 		if isRecordNotFound(err) {
-			s.log.Info("TXT record not found, skipping delete", "recordName", recordName, "zone", zone)
+			s.log.Warn(
+				"TXT record not found, skipping deletion",
+				"recordName", recordName,
+				"zone", zone,
+				"request", req,
+				"response", resp,
+				"error", err,
+			)
 			return nil
 		}
-		return errors.Wrapf(err, "failed to list txt records for zone %s", zone)
+		s.log.Warn(
+			"failed to list txt records",
+			"recordName", recordName,
+			"zone", zone,
+			"request", req,
+			"response", resp,
+			"error", err,
+		)
+		return errors.WithStack(err)
 	}
 	for _, record := range resp.Response.RecordList {
 		if *record.Value != key {
@@ -35,7 +55,16 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 		resp, err := client.DeleteRecord(req)
 		s.log.Debug("dnspod api request", "api", "DeleteRecord", "request", req, "response", resp)
 		if err != nil {
-			return errors.Wrapf(err, "failed to delete txt record (value:%s id:%d) in zone %s", *record.Value, *record.RecordId, zone)
+			s.log.Error(
+				"failed to delete TXT record",
+				"recordValue", *record.Value,
+				"recordId", *record.RecordId,
+				"zone", zone,
+				"request", req,
+				"response", resp,
+				"error", err,
+			)
+			return errors.WithStack(err)
 		}
 	}
 	return nil
@@ -64,7 +93,11 @@ func (s *Solver) createTxtRecord(client *dnspod.Client, zone, fqdn, key, recordL
 	resp, err := client.CreateRecord(req)
 	s.log.Debug("dnspod api request", "api", "CreateTXTRecord", "request", req, "response", resp)
 	if err != nil {
-		s.Error(err, "dnspod api request failed", "api", "CreateTXTRecord", "request", req, "response", resp)
+		s.Error(
+			err, "dnspod api request failed",
+			"request", req,
+			"response", resp,
+		)
 		return errors.WithStack(err)
 	}
 	return nil

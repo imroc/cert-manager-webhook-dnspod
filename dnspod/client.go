@@ -16,10 +16,21 @@ import (
 func (s *Solver) loadSecretData(namespace string, ref cmmeta.SecretKeySelector) (string, error) {
 	secret, err := s.client.CoreV1().Secrets(namespace).Get(context.TODO(), ref.Name, metav1.GetOptions{})
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to get secret '%s/%s'", namespace, ref.Name)
+		s.Error(
+			err, "failed to get secret",
+			"namespace", namespace,
+			"name", ref.Name,
+		)
+		return "", errors.WithStack(err)
 	}
 	data, ok := secret.Data[ref.Key]
 	if !ok {
+		s.log.Error(
+			"no data found in secret",
+			"key", ref.Key,
+			"namespace", namespace,
+			"name", ref.Name,
+		)
 		return "", fmt.Errorf("no data found for %q in secret '%s/%s'", ref.Key, namespace, ref.Name)
 	}
 	return string(data), nil
@@ -28,23 +39,27 @@ func (s *Solver) loadSecretData(namespace string, ref cmmeta.SecretKeySelector) 
 func (s *Solver) getConfigAndClient(ch *v1alpha1.ChallengeRequest) (*Config, *dnspod.Client, error) {
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to load config from challenge request")
+		s.Error(err, "failed to load config from challenge request")
+		return nil, nil, errors.WithStack(err)
 	}
 
 	secretId, err := s.loadSecretData(ch.ResourceNamespace, cfg.SecretIdRef)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to load secret id from secret")
+		s.Error(err, "failed to load secret id from secret")
+		return nil, nil, errors.WithStack(err)
 	}
 
 	secretKey, err := s.loadSecretData(ch.ResourceNamespace, cfg.SecretKeyRef)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to load secret key from secret")
+		s.Error(err, "failed to load secret key from secret")
+		return nil, nil, errors.WithStack(err)
 	}
 
 	credential := common.NewCredential(secretId, secretKey)
 	dnspodClient, err := dnspod.NewClient(credential, "", profile.NewClientProfile())
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to create dnspod client")
+		s.Error(err, "failed to create dnspod client")
+		return nil, nil, errors.WithStack(err)
 	}
 	return cfg, dnspodClient, nil
 }
