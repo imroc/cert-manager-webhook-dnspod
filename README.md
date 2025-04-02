@@ -91,7 +91,7 @@ spec:
 
 ### Issue Certificate
 
-You can issue the certificate by creating `Certificate` that referring the dnspod `ClusterIssuer`:
+You can issue the certificate by creating `Certificate` that referring the dnspod `ClusterIssuer` or `Issuer`:
 
 ```yaml
 apiVersion: cert-manager.io/v1
