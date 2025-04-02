@@ -27,3 +27,8 @@ docker-push:
 .PHONY: docker-build
 docker-build:
 	$(CONTAINER_TOOL) buildx build --platform=linux/amd64 --tag ${IMG} .
+
+release: docker-buildx-push
+	image=${IMAGE_NAME}:$(git describe --tags --abbrev=0)
+	docker tag ${IMG} ${image}
+	docker push ${image}
