@@ -15,7 +15,7 @@ metadata:
     app: cert-manager-webhook-dnspod
 rules:
 - apiGroups:
-  - acme.imroc.cc
+  - acme.dnspod.com
   resources:
   - "*"
   verbs:
@@ -152,7 +152,7 @@ spec:
         - --tls-private-key-file=/tls/tls.key
         env:
         - name: GROUP_NAME
-          value: "acme.imroc.cc"
+          value: "acme.dnspod.com"
         ports:
         - name: https
           containerPort: 443
@@ -180,13 +180,13 @@ spec:
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1alpha1.acme.imroc.cc
+  name: v1alpha1.acme.dnspod.com
   labels:
     app: cert-manager-webhook-dnspod
   annotations:
     cert-manager.io/inject-ca-from: "cert-manager/cert-manager-webhook-dnspod-tls"
 spec:
-  group: acme.imroc.cc
+  group: acme.dnspod.com
   groupPriorityMinimum: 1000
   versionPriority: 15
   service:

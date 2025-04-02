@@ -78,12 +78,12 @@ spec:
                 name: dnspod-secret
               ttl: 600
               recordLine: ""
-            groupName: acme.imroc.cc
+            groupName: acme.dnspod.com
             solverName: dnspod
 ```
 
 1. `secretId` and `secretKey` is the SecretId and SecretKey of your TencentCloud account.
-2. `groupName` is the the groupName that specified in your cert-manager-webhook-dnspod installation, defaults to `acme.imroc.cc`.
+2. `groupName` is the the groupName that specified in your cert-manager-webhook-dnspod installation, defaults to `acme.dnspod.com`.
 3. `solverName` must be `dnspod`.
 4. `ttl` is the optional ttl of dns TXT record that created by webhook.
 5. `recordLine` is the optional recordLine parameter of the dnspod.
