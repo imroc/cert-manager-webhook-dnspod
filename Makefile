@@ -2,6 +2,8 @@ IMAGE_NAME ?= imroc/cert-manager-webhook-dnspod
 IMAGE_TAG ?= latest
 IMG ?= $(IMAGE_NAME):$(IMAGE_TAG)
 PROJECT_NAME := cert-manager-webhook-dnspod
+GIT_TAG := $(shell git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+SEMVER := $(subst v,,$(GIT_TAG))
 
 # CONTAINER_TOOL defines the container tool to be used for building images.
 # Be aware that the target commands are only tested with Docker which is
@@ -28,6 +30,8 @@ docker-push:
 docker-build:
 	$(CONTAINER_TOOL) buildx build --platform=linux/amd64 --tag $(IMG) .
 
-release: docker-buildx-push
-	$(CONTAINER_TOOL) tag $(IMG) $(IMAGE_NAME):$(shell git describe --tags --abbrev=0)
-	$(CONTAINER_TOOL) push $(IMAGE_NAME):$(shell git describe --tags --abbrev=0)
+release: docker-buildx-push push_semver
+
+push_semver:
+	$(CONTAINER_TOOL) tag $(IMG) $(IMAGE_NAME):$(SEMVER)
+	$(CONTAINER_TOOL) push $(IMAGE_NAME):$(SEMVER)
