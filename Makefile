@@ -2,7 +2,7 @@ IMAGE_NAME ?= imroc/cert-manager-webhook-dnspod
 IMAGE_TAG ?= latest
 IMG ?= $(IMAGE_NAME):$(IMAGE_TAG)
 PROJECT_NAME := cert-manager-webhook-dnspod
-GIT_TAG := $(shell git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+GIT_TAG := $(shell git tag --sort=-creatordate | grep '^v' | head -n1 2>/dev/null || echo "0.0.0")
 SEMVER := $(subst v,,$(GIT_TAG))
 
 # CONTAINER_TOOL defines the container tool to be used for building images.
