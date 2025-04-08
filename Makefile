@@ -35,3 +35,6 @@ release: docker-buildx-push push_semver
 push_semver:
 	$(CONTAINER_TOOL) tag $(IMG) $(IMAGE_NAME):$(SEMVER)
 	$(CONTAINER_TOOL) push $(IMAGE_NAME):$(SEMVER)
+
+version:
+	@echo "$(SEMVER)"
