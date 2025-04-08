@@ -21,7 +21,7 @@ helm repo add cert-manager-webhook-dnspod https://imroc.github.io/cert-manager-w
 helm upgrade --install --namespace cert-manager \
   cert-manager-webhook-dnspod cert-manager-webhook-dnspod/cert-manager-webhook-dnspod
 ```
-## Use Kubectl
+### Use Kubectl
 
 Use `kubectl apply` to install:
 
