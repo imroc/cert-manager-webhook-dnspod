@@ -12,9 +12,10 @@ import (
 var txtRecordType = "TXT"
 
 func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key string) error {
-	recordName := extractRecordName(fqdn, zone)
+	recordName := getRecordName(fqdn, zone)
 	req := dnspod.NewDescribeRecordListRequest()
 	req.Domain = &zone
+	req.Subdomain = &recordName
 	req.RecordType = &txtRecordType
 	resp, err := client.DescribeRecordList(req)
 	s.log.Debug(
@@ -46,8 +47,11 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 		return errors.WithStack(err)
 	}
 	for _, record := range resp.Response.RecordList {
-		if *record.Value != key {
+		if *record.Name != recordName {
 			continue
+		}
+		if *record.Value != key {
+			s.log.Warn("record value does not match, delete anyway", "expect", key, "actual", *record.Value, "record", *record)
 		}
 		req := dnspod.NewDeleteRecordRequest()
 		req.Domain = &zone
@@ -70,7 +74,7 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 	return nil
 }
 
-func extractRecordName(fqdn, domain string) string {
+func getRecordName(fqdn, domain string) string {
 	name := util.UnFqdn(fqdn)
 	if idx := strings.LastIndex(name, "."+domain); idx != -1 {
 		return name[:idx]
@@ -88,7 +92,7 @@ func (s *Solver) createTxtRecord(client *dnspod.Client, zone, fqdn, key, recordL
 	req.Value = &key
 	req.RecordType = &txtRecordType
 	req.RecordLine = &recordLine
-	req.SubDomain = common.StringPtr(extractRecordName(fqdn, zone))
+	req.SubDomain = common.StringPtr(getRecordName(fqdn, zone))
 
 	resp, err := client.CreateRecord(req)
 	s.log.Debug("dnspod api request", "api", "CreateTXTRecord", "request", req, "response", resp)
