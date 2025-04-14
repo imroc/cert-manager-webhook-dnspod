@@ -31,11 +31,7 @@ kubectl apply -f https://raw.githubusercontent.com/imroc/cert-manager-webhook-dn
 
 ## Usage
 
-### Prepare Issuer
-
-Before you can issue a certificate, you need to create a `Issuer` or `ClusterIssuer`.
-
-> If you use helm and only need a global `ClusterIssuer`, you can add `--set clusterIssuer.enabled=true --set clusterIssuer.secretId=xxx --set clusterIssuer.secretKey=xxx` to create the `ClusterIssuer`.
+### Cridentials
 
 Firstly, create a secret that contains TencentCloud account's `SecretId` and `SecretKey`:
 
@@ -53,7 +49,13 @@ stringData:
 
 > Base64 is not needed in `stringData`.
 
-Then you can create a `ClusterIssuer` referring the secret:
+### Create Issuer
+
+Before you can issue a certificate, you need to create a `Issuer` or `ClusterIssuer`.
+
+> If you use helm and only need a global `ClusterIssuer`, you can add `--set clusterIssuer.enabled=true --set clusterIssuer.secretId=xxx --set clusterIssuer.secretKey=xxx` to create the `ClusterIssuer`.
+
+Create a `ClusterIssuer` referring the secret:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -89,7 +91,7 @@ spec:
 5. `recordLine` is the optional recordLine parameter of the dnspod.
 6. `email` is the optional email address. When the domain is about to expire, a notification will be sent to this email address.
 
-### Issue Certificate
+### Create Certificate
 
 You can issue the certificate by creating `Certificate` that referring the dnspod `ClusterIssuer` or `Issuer`:
 
