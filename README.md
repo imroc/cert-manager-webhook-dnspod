@@ -110,7 +110,7 @@ spec:
     - "example.com"
     - "*.example.com"
 ```
-## Upgrade 1.4.0 to 1.5.x
+## Upgrade from 1.4.0 to 1.5.x
 
 Version `1.5.x` has the following changes
 
