@@ -110,3 +110,19 @@ spec:
     - "example.com"
     - "*.example.com"
 ```
+## Upgrade 1.4.0 to 1.5.x
+
+Version `1.5.x` has the following changes
+
+- Enhanced logging capabilities: Added JSON-structured logging with richer context for easier troubleshooting, and supports custom log levels (default: `info`).
+- Improved security: Store `secretId` in Secrets instead of Helm values (consistent with `secretKey` handling).
+- Enhanced code maintainability: Refactored codebase by splitting logic into multiple Go files for better organization.
+- Optimized `Present` implementation: 
+  - Removed redundant DNS SOA queries to resolve zones (The `ResolvedZone` sent by cert-manager is the zone already queried through SOA).
+  - Eliminated domain lookup via DNSPod API (DNSPod API `CreateRecord` can accepts `Domain` directly without requiring `DomainID`).
+- Changed default `groupName` from `acme.imroc.cc` to `acme.dnspod.com`.
+- Added support for gitHub pages as helm repository.
+- Added optional `recordLine` in Issuer's webhook config for custom DNS record lines.
+
+If you upgrade from 1.4.0 to 1.5.x, and created `Issuer` or `ClusterIssuer` manually (`clusterIssuer.enabled=false`), you need to add `secretIdRef` to Issuer's webhook config, also add `secretId` in your corresponding `Secret`.
+
