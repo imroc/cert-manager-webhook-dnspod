@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
+	"golang.org/x/net/idna"
 )
 
 var txtRecordType = "TXT"
@@ -46,8 +47,9 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 		)
 		return errors.WithStack(err)
 	}
+	normalizedRecordName := normalizeDomainName(recordName)
 	for _, record := range resp.Response.RecordList {
-		if *record.Name != recordName {
+		if normalizeDomainName(*record.Name) != normalizedRecordName {
 			continue
 		}
 		if *record.Value != key {
@@ -80,6 +82,14 @@ func getRecordName(fqdn, domain string) string {
 		return name[:idx]
 	}
 	return name
+}
+
+func normalizeDomainName(name string) string {
+	normalized, err := idna.ToUnicode(strings.ToLower(name))
+	if err != nil {
+		return name
+	}
+	return normalized
 }
 
 func (s *Solver) createTxtRecord(client *dnspod.Client, zone, fqdn, key, recordLine string, ttl *uint64) error {
