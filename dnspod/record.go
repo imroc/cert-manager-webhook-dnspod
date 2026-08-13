@@ -47,9 +47,9 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 		)
 		return errors.WithStack(err)
 	}
-	normalizedRecordName := normalizeDomainName(recordName)
+	normalizedRecordName := s.normalizeDomainName(recordName)
 	for _, record := range resp.Response.RecordList {
-		if normalizeDomainName(*record.Name) != normalizedRecordName {
+		if s.normalizeDomainName(*record.Name) != normalizedRecordName {
 			continue
 		}
 		if *record.Value != key {
@@ -84,9 +84,14 @@ func getRecordName(fqdn, domain string) string {
 	return name
 }
 
-func normalizeDomainName(name string) string {
+func (s *Solver) normalizeDomainName(name string) string {
 	normalized, err := idna.ToUnicode(strings.ToLower(name))
 	if err != nil {
+		s.log.Warn(
+			"failed to normalize IDNA domain name, falling back to original value",
+			"name", name,
+			"error", err,
+		)
 		return name
 	}
 	return normalized
