@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine AS build_deps
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 
 RUN apk add --no-cache git
 
@@ -9,11 +9,12 @@ COPY go.sum .
 
 RUN go mod download
 
-FROM build_deps AS build
-
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o webhook -ldflags '-w -extldflags "-static"' .
 
 FROM alpine:3.21
 
