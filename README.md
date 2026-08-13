@@ -31,7 +31,7 @@ kubectl apply -f https://raw.githubusercontent.com/imroc/cert-manager-webhook-dn
 
 ## Usage
 
-### Cridentials
+### Credentials
 
 Firstly, create a secret that contains TencentCloud account's `SecretId` and `SecretKey`:
 
@@ -85,7 +85,7 @@ spec:
 ```
 
 1. `secretId` and `secretKey` is the SecretId and SecretKey of your TencentCloud account.
-2. `groupName` is the the groupName that specified in your cert-manager-webhook-dnspod installation, defaults to `acme.dnspod.com`.
+2. `groupName` is the groupName specified in your cert-manager-webhook-dnspod installation, defaults to `acme.dnspod.com`.
 3. `solverName` must be `dnspod`.
 4. `ttl` is the optional ttl of dns TXT record that created by webhook.
 5. `recordLine` is the optional recordLine parameter of the dnspod.
@@ -125,4 +125,3 @@ Version `1.5.x` has the following changes
 - Added optional `recordLine` in Issuer's webhook config for custom DNS record lines.
 
 If you upgrade from 1.4.0 to 1.5.x, and created `Issuer` or `ClusterIssuer` manually (`clusterIssuer.enabled=false`), you need to add `secretIdRef` to Issuer's webhook config, also add `secretId` in your corresponding `Secret`.
-

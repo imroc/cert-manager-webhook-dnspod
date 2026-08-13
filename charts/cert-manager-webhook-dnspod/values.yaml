@@ -20,6 +20,8 @@ image:
   tag: ""
   pullPolicy: IfNotPresent
 
+replicaCount: 1
+
 clusterIssuer:
   enabled: false
   name: dnspod
@@ -60,10 +62,3 @@ tolerations: []
 affinity: {}
 
 namespace: "cert-manager"
-
-cert-manager:
-  enabled: false
-  installCRDs: true
-  prometheus:
-    enabled: false
-  namespace: cert-manager
