@@ -1,3 +1,5 @@
+---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -5,29 +7,39 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
-
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
+# Grant cert-manager permission to validate using our apiserver
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cert-manager-webhook-dnspod:domain-solver
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 rules:
-- apiGroups:
-  - acme.dnspod.com
-  resources:
-  - "*"
-  verbs:
-  - "create"
-
+  - apiGroups:
+      - acme.dnspod.com
+    resources:
+      - '*'
+    verbs:
+      - 'create'
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cert-manager-webhook-dnspod:secret-reader
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 rules:
 - apiGroups:
   - ""
@@ -36,48 +48,59 @@ rules:
   verbs:
   - get
   - watch
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
+# apiserver gets the auth-delegator role to delegate auth decisions to
+# the core apiserver
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cert-manager-webhook-dnspod:auth-delegator
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:auth-delegator
 subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: cert-manager-webhook-dnspod
-  namespace: cert-manager
-
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cert-manager-webhook-dnspod:domain-solver
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-webhook-dnspod:domain-solver
 subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: cert-manager
-  namespace: cert-manager
-
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cert-manager-webhook-dnspod:secret-reader
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -87,8 +110,11 @@ subjects:
   kind: ServiceAccount
   name: cert-manager-webhook-dnspod
   namespace: cert-manager
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/rbac.yaml
+# Grant the webhook permission to read the ConfigMap containing the Kubernetes
+# apiserver's requestheader-ca-certificate.
+# This ConfigMap is automatically created by the Kubernetes apiserver.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -96,17 +122,20 @@ metadata:
   namespace: kube-system
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: extension-apiserver-authentication-reader
 subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: cert-manager-webhook-dnspod
-  namespace: cert-manager
-
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-webhook-dnspod
+    namespace: cert-manager
 ---
+# Source: cert-manager-webhook-dnspod/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -114,17 +143,21 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
   type: ClusterIP
   ports:
-  - port: 443
-    targetPort: https
-    protocol: TCP
-    name: https
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
   selector:
     app: cert-manager-webhook-dnspod
-
+    release: cert-manager-webhook-dnspod
 ---
+# Source: cert-manager-webhook-dnspod/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -132,59 +165,71 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: cert-manager-webhook-dnspod
+      release: cert-manager-webhook-dnspod
   template:
     metadata:
       labels:
         app: cert-manager-webhook-dnspod
+        release: cert-manager-webhook-dnspod
     spec:
       serviceAccountName: cert-manager-webhook-dnspod
       containers:
-      - name: cert-manager-webhook-dnspod
-        image: "imroc/cert-manager-webhook-dnspod:1.5.2"
-        imagePullPolicy: IfNotPresent
-        args:
-        - --tls-cert-file=/tls/tls.crt
-        - --tls-private-key-file=/tls/tls.key
-        env:
-        - name: GROUP_NAME
-          value: "acme.dnspod.com"
-        ports:
-        - name: https
-          containerPort: 443
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            scheme: HTTPS
-            path: /healthz
-            port: https
-        readinessProbe:
-          httpGet:
-            scheme: HTTPS
-            path: /healthz
-            port: https
-        volumeMounts:
-        - name: certs
-          mountPath: /tls
-          readOnly: true
+        - name: webhook
+          image: "imroc/cert-manager-webhook-dnspod:1.5.2"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --tls-cert-file=/tls/tls.crt
+            - --tls-private-key-file=/tls/tls.key
+          env:
+            - name: GROUP_NAME
+              value: "acme.dnspod.com"
+            - name: LOG_LEVEL
+              value: "info"
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          readinessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: https
+          volumeMounts:
+            - name: certs
+              mountPath: /tls
+              readOnly: true
+          resources:
+            {}
       volumes:
-      - name: certs
-        secret:
-          secretName: cert-manager-webhook-dnspod-tls
-
+        - name: certs
+          secret:
+            secretName: cert-manager-webhook-dnspod-webhook-tls
 ---
+# Source: cert-manager-webhook-dnspod/templates/apiservice.yaml
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   name: v1alpha1.acme.dnspod.com
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
   annotations:
-    cert-manager.io/inject-ca-from: "cert-manager/cert-manager-webhook-dnspod-tls"
+    cert-manager.io/inject-ca-from: "cert-manager/cert-manager-webhook-dnspod-webhook-tls"
 spec:
   group: acme.dnspod.com
   groupPriorityMinimum: 1000
@@ -193,8 +238,9 @@ spec:
     name: cert-manager-webhook-dnspod
     namespace: cert-manager
   version: v1alpha1
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/pki.yaml
+# Generate a CA Certificate used to sign certificates for the webhook
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -202,6 +248,9 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
   secretName: cert-manager-webhook-dnspod-ca
   duration: 43800h0m0s # 5y
@@ -209,17 +258,21 @@ spec:
     name: cert-manager-webhook-dnspod-selfsign
   commonName: "ca.dnspod-webhook.cert-manager"
   isCA: true
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/pki.yaml
+# Finally, generate a serving certificate for the webhook to use
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: cert-manager-webhook-dnspod-tls
+  name: cert-manager-webhook-dnspod-webhook-tls
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
-  secretName: cert-manager-webhook-dnspod-tls
+  secretName: cert-manager-webhook-dnspod-webhook-tls
   duration: 8760h0m0s # 1y
   issuerRef:
     name: cert-manager-webhook-dnspod-ca
@@ -227,8 +280,10 @@ spec:
   - cert-manager-webhook-dnspod
   - cert-manager-webhook-dnspod.cert-manager
   - cert-manager-webhook-dnspod.cert-manager.svc
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/pki.yaml
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -236,10 +291,14 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
   selfSigned: {}
-
 ---
+# Source: cert-manager-webhook-dnspod/templates/pki.yaml
+# Create an Issuer that uses the above generated CA certificate to issue certs
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -247,6 +306,9 @@ metadata:
   namespace: cert-manager
   labels:
     app: cert-manager-webhook-dnspod
+    chart: cert-manager-webhook-dnspod-1.5.2
+    release: cert-manager-webhook-dnspod
+    heritage: Helm
 spec:
   ca:
     secretName: cert-manager-webhook-dnspod-ca

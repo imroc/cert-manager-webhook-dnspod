@@ -11,6 +11,10 @@ SEMVER := $(subst v,,$(GIT_TAG))
 # tools. (i.e. podman)
 CONTAINER_TOOL ?= docker
 
+.PHONY: bundle
+bundle:
+	helm template cert-manager-webhook-dnspod charts/cert-manager-webhook-dnspod --namespace cert-manager > bundle.yaml
+
 .PHONY: docker-buildx-push
 docker-buildx-push: docker-buildx docker-push
 
