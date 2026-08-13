@@ -13,7 +13,10 @@ CONTAINER_TOOL ?= docker
 
 .PHONY: bundle
 bundle:
-	helm template cert-manager-webhook-dnspod charts/cert-manager-webhook-dnspod --namespace cert-manager > bundle.yaml
+	helm template cert-manager-webhook-dnspod charts/cert-manager-webhook-dnspod --namespace cert-manager \
+		| grep -vE '^# Source:' \
+		| grep -vE '^[[:space:]]*(chart|release|heritage):' \
+		> bundle.yaml
 
 .PHONY: docker-buildx-push
 docker-buildx-push: docker-buildx docker-push
