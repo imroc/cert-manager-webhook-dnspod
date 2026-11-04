@@ -52,8 +52,10 @@ func (s *Solver) ensureTxtRecordsDeleted(client *dnspod.Client, zone, fqdn, key 
 		if s.normalizeDomainName(*record.Name) != normalizedRecordName {
 			continue
 		}
+		// Other challenges may share this CNAME target. Delete only this
+		// challenge's value, preserving the rest of the TXT record set.
 		if *record.Value != key {
-			s.log.Warn("record value does not match, delete anyway", "expect", key, "actual", *record.Value, "record", *record)
+			continue
 		}
 		req := dnspod.NewDeleteRecordRequest()
 		req.Domain = &zone
